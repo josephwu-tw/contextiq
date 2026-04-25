@@ -211,15 +211,3 @@ The evaluation harness in `tests/evaluation.py` runs all sample queries against 
 *The extended set includes 3 new queries that only resolve after uploading `DEPLOYMENT.md`. Adding that document raised the hit rate on the extended query set from 55% to 73% (+18%).
 
 **What failed:** Two query types consistently miss — "how do I connect to the database?" (keyword mismatch: the doc says "DATABASE_URL", not "connect to") and queries with hyphenated env vars like `LOG_LEVEL` (indexed as one token, not matched by individual words). Both are known limitations of keyword-only retrieval.
-
----
-
-## Reflection and Ethics
-
-**Limitations and bias** — The retrieval system is blind to synonyms and paraphrase. It can return confident-looking snippets that are genuinely irrelevant, with no confidence signal to warn the user. The LLM guardrail (explicit refusal prompt) partially compensates but only in RAG mode.
-
-**Potential misuse** — If deployed against a real codebase, the system could expose internal documentation to unauthorized users. Access control at the API layer (API keys, auth middleware) would be required before any production deployment.
-
-**What surprised me during testing** — Naive LLM mode produced the most fluent and confident answers, yet was also the least trustworthy. It fabricated plausible-sounding auth flows and database schemas that had no relation to the actual project docs. RAG mode was less fluent but far more reliable, and its explicit refusals were the most useful signal of all.
-
-**Collaboration with AI** — Claude helped design the incremental index update in `add_documents()` (appending to the existing index rather than rebuilding from scratch), which was genuinely useful and I kept it as-is. In one instance it suggested adding a `conftest.py` for pytest configuration, which was unnecessary given the evaluation script runs as a plain Python module — that suggestion was ignored.

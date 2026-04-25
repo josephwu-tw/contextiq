@@ -16,6 +16,13 @@ class OpenAIClient(BaseLLMClient):
             )
         self.client = OpenAI(api_key=api_key)
 
+    def _generate(self, prompt: str) -> str:
+        response = self.client.chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.choices[0].message.content.strip()
+
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str:
         response = self.client.chat.completions.create(
             model=OPENAI_MODEL,

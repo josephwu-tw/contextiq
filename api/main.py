@@ -9,6 +9,7 @@ load_dotenv()
 from fastapi import FastAPI, UploadFile, File
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import Optional
 
 from docubot import DocuBot
 from providers import load_available_clients, ALL_PROVIDER_NAMES
@@ -42,6 +43,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     answer: str
+    steps: Optional[list] = None
 
 class DocStatus(BaseModel):
     source_count: int
@@ -106,6 +108,21 @@ def chat(req: ChatRequest):
 
         elif req.mode == "RAG":
             answer = bot.answer_rag(req.message)
+
+        elif req.mode == "Agentic":
+            plan = client.plan_retrieval(req.message)
+            snippets = bot.retrieve(plan["search_terms"] or req.message)
+            sources = list(dict.fromkeys(fname for fname, _ in snippets))
+            answer = (
+                client.answer_from_snippets(req.message, snippets)
+                if snippets
+                else "I do not know based on the docs I have."
+            )
+            steps = [
+                {"step": "plan", "reasoning": plan["reasoning"], "search_terms": plan["search_terms"]},
+                {"step": "retrieve", "sources": sources, "chunk_count": len(snippets)},
+            ]
+            return ChatResponse(answer=answer, steps=steps)
 
         else:
             answer = f"Unknown mode: {req.mode}"

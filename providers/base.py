@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import re
 
 
 class BaseLLMClient(ABC):
@@ -9,10 +10,30 @@ class BaseLLMClient(ABC):
     def provider_name(self) -> str: ...
 
     @abstractmethod
+    def _generate(self, prompt: str) -> str: ...
+
+    @abstractmethod
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str: ...
 
     @abstractmethod
     def answer_from_snippets(self, query: str, snippets: list) -> str: ...
+
+    def plan_retrieval(self, query: str) -> dict:
+        prompt = (
+            f'You are a retrieval planner for a documentation assistant.\n\n'
+            f'A user asked: "{query}"\n\n'
+            f'Decide what to search for in the documentation index.\n\n'
+            f'Reply in this exact format (no extra text):\n'
+            f'REASONING: <one sentence explaining what the question is looking for>\n'
+            f'SEARCH_TERMS: <3-6 keywords most likely to appear in the relevant docs>'
+        )
+        raw = self._generate(prompt)
+        reasoning_m = re.search(r'REASONING:\s*(.+)', raw)
+        terms_m = re.search(r'SEARCH_TERMS:\s*(.+)', raw)
+        return {
+            "reasoning": reasoning_m.group(1).strip() if reasoning_m else "",
+            "search_terms": terms_m.group(1).strip() if terms_m else query,
+        }
 
     def _build_naive_prompt(self, query: str) -> str:
         return f"You are a documentation assistant.\nAnswer this developer question: {query}"

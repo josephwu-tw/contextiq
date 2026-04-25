@@ -136,7 +136,7 @@ async function sendMessage() {
 
     const data = await res.json();
     hideTyping(typingId);
-    appendMessage("assistant", data.answer, selectedProvider);
+    appendMessage("assistant", data.answer, selectedProvider, data.steps || null);
   } catch (err) {
     hideTyping(typingId);
     appendMessage("assistant", `⚠️ Request failed: ${err.message}`);
@@ -152,7 +152,7 @@ const PROVIDER_COLORS = {
   ChatGPT: { bg: "rgba(16,163,127,0.15)",  text: "#10a37f" },
 };
 
-function appendMessage(role, text, provider = null) {
+function appendMessage(role, text, provider = null, steps = null) {
   const messages = document.getElementById("messages");
 
   const wrap = document.createElement("div");
@@ -176,12 +176,32 @@ function appendMessage(role, text, provider = null) {
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.innerHTML = renderMarkdown(text);
+
+  if (steps) {
+    bubble.innerHTML = renderSteps(steps) + renderMarkdown(text);
+  } else {
+    bubble.innerHTML = renderMarkdown(text);
+  }
 
   wrap.appendChild(label);
   wrap.appendChild(bubble);
   messages.appendChild(wrap);
   messages.scrollTop = messages.scrollHeight;
+}
+
+function renderSteps(steps) {
+  const labels = ["① Plan", "② Retrieved"];
+  const items = steps.map((s, i) => {
+    let body = "";
+    if (s.step === "plan") {
+      body = `${escapeHtml(s.reasoning)}<br><span class="step-terms">Searching: <code>${escapeHtml(s.search_terms)}</code></span>`;
+    } else if (s.step === "retrieve") {
+      const src = s.sources.length ? escapeHtml(s.sources.join(", ")) : "no matches";
+      body = `${src} &middot; ${s.chunk_count} chunk${s.chunk_count !== 1 ? "s" : ""}`;
+    }
+    return `<div class="step-item"><span class="step-label">${labels[i]}</span><div class="step-body">${body}</div></div>`;
+  });
+  return `<div class="steps-chain">${items.join("")}</div>`;
 }
 
 function showTyping() {

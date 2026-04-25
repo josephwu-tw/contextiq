@@ -16,6 +16,10 @@ class GeminiClient(BaseLLMClient):
             )
         self.client = genai.Client(api_key=api_key)
 
+    def _generate(self, prompt: str) -> str:
+        response = self.client.models.generate_content(model=GEMINI_MODEL, contents=prompt)
+        return (response.text or "").strip()
+
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str:
         response = self.client.models.generate_content(
             model=GEMINI_MODEL,

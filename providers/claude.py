@@ -16,6 +16,14 @@ class ClaudeClient(BaseLLMClient):
             )
         self.client = anthropic.Anthropic(api_key=api_key)
 
+    def _generate(self, prompt: str) -> str:
+        response = self.client.messages.create(
+            model=CLAUDE_MODEL,
+            max_tokens=512,
+            messages=[{"role": "user", "content": prompt}],
+        )
+        return response.content[0].text.strip()
+
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str:
         response = self.client.messages.create(
             model=CLAUDE_MODEL,
