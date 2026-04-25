@@ -1,13 +1,6 @@
 """
-Optional helper module containing:
-- SAMPLE_QUERIES used during the activity
-- FALLBACK_DOCS, an in memory documentation corpus used if the docs/ folder
-  is missing or cannot be loaded
+Sample queries and optional fallback documentation corpus for ContextIQ.
 """
-
-# -----------------------------------------------------------
-# Sample queries used throughout Phase 0, 1, and 2
-# -----------------------------------------------------------
 
 SAMPLE_QUERIES = [
     "Where is the auth token generated?",
@@ -20,11 +13,7 @@ SAMPLE_QUERIES = [
     "Which fields are stored in the users table?",
 ]
 
-# -----------------------------------------------------------
-# Optional fallback documentation corpus
-# Used only if docs/ directory is missing.
-# -----------------------------------------------------------
-
+# Fallback corpus used if the docs/ directory is missing or empty.
 FALLBACK_DOCS = {
     "AUTH.md": """
 # Authentication Guide
@@ -38,7 +27,6 @@ requests.
 
 A token can be refreshed using POST /api/refresh.
 """,
-
     "API_REFERENCE.md": """
 # API Reference
 
@@ -48,7 +36,6 @@ GET /api/projects/<project_id> returns detailed project info.
 
 POST /api/login validates credentials and returns an access token.
 """,
-
     "DATABASE.md": """
 # Database Guide
 
@@ -65,20 +52,16 @@ The projects table contains:
 - status
 - owner_id
 """,
-
     "SETUP.md": """
 # Setup Guide
 
 Set DATABASE_URL and AUTH_SECRET_KEY before running the application.
 Install dependencies with pip install -r requirements.txt.
 Run the server using python app.py.
-"""
+""",
 }
 
 
 def load_fallback_documents():
-    """
-    Returns FALLBACK_DOCS as a list of (filename, text) tuples.
-    Provided as a helper for environments where no docs/ folder is available.
-    """
+    """Returns FALLBACK_DOCS as a list of (filename, text) tuples."""
     return list(FALLBACK_DOCS.items())
