@@ -10,7 +10,7 @@ class GeminiClient(BaseLLMClient):
 
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")
-        if not api_key:
+        if not api_key or api_key.startswith("your_"):
             raise RuntimeError(
                 "Missing GEMINI_API_KEY. Set it in your .env file to enable Gemini."
             )

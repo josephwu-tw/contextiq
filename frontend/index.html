@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ContextIQ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">ContextIQ</h1>
+        <p class="tagline">Context-aware documentation Q&amp;A</p>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="section-label" for="provider-select">AI Provider</label>
+        <select class="select" id="provider-select"></select>
+        <div class="provider-status" id="provider-status"></div>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="section-label" for="mode-select">Mode</label>
+        <select class="select" id="mode-select">
+          <option value="RAG">RAG — retrieval + AI synthesis</option>
+          <option value="Naive LLM">Naive LLM — AI only, no retrieval</option>
+          <option value="Retrieval Only">Retrieval Only — raw snippets, no AI</option>
+        </select>
+      </div>
+
+      <div class="sidebar-section">
+        <label class="section-label">Custom Documents</label>
+        <p class="hint">
+          Upload <code>.md</code> or <code>.txt</code> files to extend the knowledge base.
+          Try <code>sample_uploads/DEPLOYMENT.md</code> to see hit rate improve.
+        </p>
+        <label class="upload-btn" for="file-input">
+          Upload docs
+          <input type="file" id="file-input" accept=".md,.txt" multiple hidden />
+        </label>
+        <p class="doc-status" id="doc-status">Loading…</p>
+        <button class="btn-ghost" id="reset-btn">Reset to default docs</button>
+      </div>
+
+      <div class="sidebar-footer">
+        <a class="api-link" href="/docs" target="_blank">API docs ↗</a>
+      </div>
+    </aside>
+
+    <!-- Chat -->
+    <main class="chat-panel">
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">⚡</div>
+          <h2>Ask anything about the docs</h2>
+          <p>Try: <em>Where is the auth token generated?</em></p>
+        </div>
+      </div>
+
+      <div class="input-bar">
+        <textarea
+          class="input"
+          id="message-input"
+          placeholder="Ask a question about the docs…"
+          rows="1"
+          autocomplete="off"
+        ></textarea>
+        <button class="btn-send" id="send-btn">Send</button>
+      </div>
+    </main>
+
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>

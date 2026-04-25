@@ -9,6 +9,8 @@ _REGISTRY = [
     ("ChatGPT", OpenAIClient),
 ]
 
+ALL_PROVIDER_NAMES = [name for name, _ in _REGISTRY]
+
 
 def load_available_clients() -> dict[str, BaseLLMClient]:
     """
