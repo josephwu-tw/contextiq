@@ -1,4 +1,4 @@
-# DocuBot Model Card
+# ContextIQ Model Card
 
 This model card is a short reflection on your DocuBot system. Fill it out after you have implemented retrieval and experimented with all three modes:
 

@@ -14,10 +14,6 @@ class BaseLLMClient(ABC):
     @abstractmethod
     def answer_from_snippets(self, query: str, snippets: list) -> str: ...
 
-    # -----------------------------------------------------------
-    # Shared prompt builders — all providers use the same wording
-    # -----------------------------------------------------------
-
     def _build_naive_prompt(self, query: str) -> str:
         return f"You are a documentation assistant.\nAnswer this developer question: {query}"
 

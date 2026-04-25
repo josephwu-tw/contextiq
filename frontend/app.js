@@ -136,7 +136,7 @@ async function sendMessage() {
 
     const data = await res.json();
     hideTyping(typingId);
-    appendMessage("assistant", data.answer);
+    appendMessage("assistant", data.answer, selectedProvider);
   } catch (err) {
     hideTyping(typingId);
     appendMessage("assistant", `⚠️ Request failed: ${err.message}`);
@@ -146,7 +146,13 @@ async function sendMessage() {
   }
 }
 
-function appendMessage(role, text) {
+const PROVIDER_COLORS = {
+  Gemini:  { bg: "rgba(66,133,244,0.15)",  text: "#4285f4" },
+  Claude:  { bg: "rgba(217,119,87,0.15)",  text: "#d97757" },
+  ChatGPT: { bg: "rgba(16,163,127,0.15)",  text: "#10a37f" },
+};
+
+function appendMessage(role, text, provider = null) {
   const messages = document.getElementById("messages");
 
   const wrap = document.createElement("div");
@@ -155,6 +161,18 @@ function appendMessage(role, text) {
   const label = document.createElement("div");
   label.className = "role-label";
   label.textContent = role === "user" ? "You" : "ContextIQ";
+
+  if (role === "assistant" && provider) {
+    const badge = document.createElement("span");
+    badge.className = "provider-badge";
+    badge.textContent = provider;
+    const colors = PROVIDER_COLORS[provider];
+    if (colors) {
+      badge.style.background = colors.bg;
+      badge.style.color = colors.text;
+    }
+    label.appendChild(badge);
+  }
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";

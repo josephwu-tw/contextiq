@@ -236,6 +236,19 @@ body {
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.provider-badge {
+  font-size: 0.65rem;
+  padding: 1px 7px;
+  border-radius: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  opacity: 0.85;
 }
 
 .bubble {
