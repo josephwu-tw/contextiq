@@ -16,18 +16,27 @@ from providers import load_available_clients
 # -----------------------------------------------------------
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DOCS = os.path.join(SCRIPT_DIR, "docs")
 
 clients = load_available_clients()
-bot = DocuBot(docs_folder=os.path.join(SCRIPT_DIR, "docs"))
+bot = DocuBot(docs_folder=DEFAULT_DOCS)
 
 MODES = ["RAG", "Naive LLM", "Retrieval Only"]
 PROVIDER_NAMES = list(clients.keys())
 
 
-def _status_md() -> str:
+def _provider_status_md() -> str:
     if PROVIDER_NAMES:
         return "**Active:** " + " · ".join(PROVIDER_NAMES)
     return "**No providers active** — add API keys to `.env` and restart."
+
+
+def _doc_status_md() -> str:
+    default_count = len(DocuBot(docs_folder=DEFAULT_DOCS).documents)
+    custom_count = bot.source_count - default_count
+    if custom_count > 0:
+        return f"**Sources:** {default_count} default + {custom_count} custom"
+    return f"**Sources:** {bot.source_count} default docs"
 
 
 # -----------------------------------------------------------
@@ -39,7 +48,7 @@ def respond(message: str, history: list, provider_name: str, mode: str) -> list:
         return history
 
     client = clients.get(provider_name)
-    bot.llm_client = client  # swap provider before every call
+    bot.llm_client = client
 
     if mode == "Retrieval Only":
         answer = bot.answer_retrieval_only(message)
@@ -66,6 +75,38 @@ def respond(message: str, history: list, provider_name: str, mode: str) -> list:
 
 
 # -----------------------------------------------------------
+# Document upload handlers
+# -----------------------------------------------------------
+
+def upload_docs(files) -> str:
+    """Loads uploaded .md/.txt files into the bot alongside the default docs."""
+    if not files:
+        return _doc_status_md()
+
+    bot.reset_to_default_docs()
+    new_docs = []
+    for f in files:
+        path = f if isinstance(f, str) else f.name
+        try:
+            with open(path, "r", encoding="utf-8", errors="ignore") as fh:
+                text = fh.read()
+            new_docs.append((os.path.basename(path), text))
+        except OSError:
+            pass
+
+    if new_docs:
+        bot.add_documents(new_docs)
+
+    return _doc_status_md()
+
+
+def reset_docs() -> str:
+    """Removes all uploaded documents, restoring only the default corpus."""
+    bot.reset_to_default_docs()
+    return _doc_status_md()
+
+
+# -----------------------------------------------------------
 # UI layout
 # -----------------------------------------------------------
 
@@ -80,7 +121,7 @@ with gr.Blocks(title="ContextIQ") as demo:
     with gr.Row():
 
         # --- Left panel: controls ---
-        with gr.Column(scale=1, min_width=230):
+        with gr.Column(scale=1, min_width=240):
             gr.Markdown("### Settings")
 
             provider_dd = gr.Dropdown(
@@ -96,13 +137,28 @@ with gr.Blocks(title="ContextIQ") as demo:
             )
 
             gr.Markdown("---")
-            gr.Markdown(_status_md())
+            gr.Markdown(_provider_status_md())
             gr.Markdown(
                 "**Mode guide**\n"
                 "- **RAG** — retrieval + AI synthesis\n"
                 "- **Naive LLM** — AI only, no retrieval\n"
                 "- **Retrieval Only** — raw snippets, no AI"
             )
+
+            gr.Markdown("---")
+            gr.Markdown("### Custom Documents")
+            gr.Markdown(
+                "Upload `.md` or `.txt` files to extend the knowledge base. "
+                "Try `sample_uploads/DEPLOYMENT.md` to see the hit rate improve."
+            )
+
+            file_upload = gr.File(
+                file_types=[".md", ".txt"],
+                file_count="multiple",
+                label="Upload docs",
+            )
+            doc_status = gr.Markdown(_doc_status_md())
+            reset_btn = gr.Button("Reset to default docs", size="sm")
 
         # --- Right panel: chat ---
         with gr.Column(scale=3):
@@ -142,6 +198,9 @@ with gr.Blocks(title="ContextIQ") as demo:
     ).then(lambda: "", outputs=[msg_box])
 
     clear_btn.click(lambda: [], outputs=[chatbot])
+
+    file_upload.change(upload_docs, inputs=[file_upload], outputs=[doc_status])
+    reset_btn.click(reset_docs, outputs=[doc_status])
 
 
 if __name__ == "__main__":

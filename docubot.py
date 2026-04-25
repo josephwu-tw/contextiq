@@ -171,6 +171,35 @@ class DocuBot:
         return self.llm_client.answer_from_snippets(query, snippets)
 
     # -----------------------------------------------------------
+    # Dynamic document management (RAG Enhancement)
+    # -----------------------------------------------------------
+
+    def add_documents(self, new_docs: list):
+        """
+        Adds (filename, text) tuples to the corpus and incrementally
+        updates the index without rebuilding it from scratch.
+        """
+        offset = len(self.chunks)
+        self.documents.extend(new_docs)
+        new_chunks = self.chunk_documents(new_docs)
+        self.chunks.extend(new_chunks)
+        for idx, (_, text) in enumerate(new_chunks, start=offset):
+            for token in text.lower().split():
+                word = token.strip(".,!?;:\"'()")
+                if word:
+                    self.index.setdefault(word, set()).add(idx)
+
+    def reset_to_default_docs(self):
+        """Discards any added documents and reloads only the original docs folder."""
+        self.documents = self.load_documents()
+        self.chunks = self.chunk_documents(self.documents)
+        self.index = self.build_index(self.chunks)
+
+    @property
+    def source_count(self) -> int:
+        return len(self.documents)
+
+    # -----------------------------------------------------------
     # Bonus Helper: concatenated docs for naive generation mode
     # -----------------------------------------------------------
 
