@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 420" width="740" height="420" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+
+  <!-- Background -->
+  <rect width="740" height="420" fill="#f8f9fc" rx="12"/>
+
+  <!-- Title -->
+  <text x="370" y="34" text-anchor="middle" font-size="15" font-weight="700" fill="#1a1d2e">ContextIQ — System Architecture</text>
+
+  <!-- ── User Browser ── -->
+  <rect x="290" y="56" width="160" height="52" rx="8" fill="#eef0fb" stroke="#5b6af0" stroke-width="1.5"/>
+  <text x="370" y="77" text-anchor="middle" font-size="12" font-weight="600" fill="#3a44c0">User (Browser)</text>
+  <text x="370" y="96" text-anchor="middle" font-size="10" fill="#6670a8">fetch /api/*</text>
+
+  <!-- Arrow: User → FastAPI -->
+  <line x1="370" y1="108" x2="370" y2="146" stroke="#5b6af0" stroke-width="1.5" marker-end="url(#arr-blue)"/>
+  <text x="378" y="132" font-size="9.5" fill="#888">HTTP</text>
+
+  <!-- ── FastAPI ── -->
+  <rect x="245" y="148" width="250" height="56" rx="8" fill="#eef0fb" stroke="#5b6af0" stroke-width="1.5"/>
+  <text x="370" y="170" text-anchor="middle" font-size="12" font-weight="600" fill="#3a44c0">FastAPI</text>
+  <text x="370" y="188" text-anchor="middle" font-size="10" fill="#6670a8">api/main.py · 6 REST endpoints</text>
+
+  <!-- Arrow: FastAPI → DocuBot (right) -->
+  <line x1="495" y1="176" x2="560" y2="176" stroke="#10b981" stroke-width="1.5" marker-end="url(#arr-green)"/>
+  <text x="518" y="170" font-size="9" fill="#059669">retrieve()</text>
+
+  <!-- Arrow: FastAPI → Providers (left) -->
+  <line x1="245" y1="176" x2="180" y2="176" stroke="#d97757" stroke-width="1.5" marker-end="url(#arr-orange)"/>
+  <text x="188" y="170" font-size="9" fill="#b85a35">LLM call</text>
+
+  <!-- ── DocuBot ── -->
+  <rect x="560" y="148" width="148" height="56" rx="8" fill="#e8faf3" stroke="#10b981" stroke-width="1.5"/>
+  <text x="634" y="170" text-anchor="middle" font-size="12" font-weight="600" fill="#065f46">DocuBot</text>
+  <text x="634" y="188" text-anchor="middle" font-size="10" fill="#4a9e7c">docubot.py</text>
+
+  <!-- Arrow: DocuBot → Index -->
+  <line x1="634" y1="204" x2="634" y2="254" stroke="#10b981" stroke-width="1.5" marker-end="url(#arr-green)"/>
+
+  <!-- ── Inverted Index ── -->
+  <rect x="560" y="256" width="148" height="64" rx="8" fill="#e8faf3" stroke="#10b981" stroke-width="1.5"/>
+  <text x="634" y="278" text-anchor="middle" font-size="12" font-weight="600" fill="#065f46">Inverted Index</text>
+  <text x="634" y="295" text-anchor="middle" font-size="10" fill="#4a9e7c">score + top-k chunks</text>
+  <text x="634" y="312" text-anchor="middle" font-size="10" fill="#4a9e7c">paragraph-level</text>
+
+  <!-- Arrow: Index → FastAPI (context chunks back) -->
+  <path d="M560 290 Q480 340 370 320 Q330 310 370 210" fill="none" stroke="#10b981" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-green)"/>
+  <text x="436" y="348" font-size="9" fill="#059669">context chunks</text>
+
+  <!-- ── Providers ── -->
+  <rect x="32" y="130" width="148" height="120" rx="8" fill="#fff4f0" stroke="#d97757" stroke-width="1.5"/>
+  <text x="106" y="154" text-anchor="middle" font-size="12" font-weight="600" fill="#92400e">providers/</text>
+
+  <!-- Gemini -->
+  <rect x="48" y="162" width="116" height="22" rx="4" fill="#dbeafe" stroke="#3b82f6" stroke-width="1"/>
+  <text x="106" y="177" text-anchor="middle" font-size="10" fill="#1d4ed8">Gemini (google-genai)</text>
+
+  <!-- Claude -->
+  <rect x="48" y="190" width="116" height="22" rx="4" fill="#fff4f0" stroke="#d97757" stroke-width="1"/>
+  <text x="106" y="205" text-anchor="middle" font-size="10" fill="#92400e">Claude (anthropic)</text>
+
+  <!-- ChatGPT -->
+  <rect x="48" y="218" width="116" height="22" rx="4" fill="#d1fae5" stroke="#10b981" stroke-width="1"/>
+  <text x="106" y="233" text-anchor="middle" font-size="10" fill="#065f46">ChatGPT (openai)</text>
+
+  <!-- Arrow: Providers → FastAPI (answer back) -->
+  <path d="M180 210 Q212 240 245 204" fill="none" stroke="#d97757" stroke-width="1.3" stroke-dasharray="5,3" marker-end="url(#arr-orange)"/>
+  <text x="186" y="248" font-size="9" fill="#b85a35">answer</text>
+
+  <!-- ── Docs corpus ── -->
+  <rect x="290" y="320" width="160" height="52" rx="8" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+  <text x="370" y="342" text-anchor="middle" font-size="12" font-weight="600" fill="#78350f">docs/</text>
+  <text x="370" y="360" text-anchor="middle" font-size="10" fill="#a16207">.md / .txt corpus</text>
+
+  <!-- Arrow: docs → DocuBot -->
+  <line x1="450" y1="346" x2="558" y2="288" stroke="#ca8a04" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arr-yellow)"/>
+  <text x="490" y="330" font-size="9" fill="#a16207">load</text>
+
+  <!-- Arrow: FastAPI ↔ docs (upload/reset) -->
+  <line x1="370" y1="204" x2="370" y2="318" stroke="#ca8a04" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#arr-yellow)"/>
+  <text x="378" y="268" font-size="9" fill="#a16207">upload / reset</text>
+
+  <!-- ── Arrow markers ── -->
+  <defs>
+    <marker id="arr-blue" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#5b6af0"/>
+    </marker>
+    <marker id="arr-green" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#10b981"/>
+    </marker>
+    <marker id="arr-orange" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#d97757"/>
+    </marker>
+    <marker id="arr-yellow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#ca8a04"/>
+    </marker>
+  </defs>
+
+</svg>

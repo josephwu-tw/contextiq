@@ -202,3 +202,24 @@ answer when they haven't.
   access to your docs and will fabricate plausible-sounding but wrong details.
 
 ---
+
+## 8. AI Collaboration
+
+**How did you use AI assistance during development?**
+
+Claude (Anthropic) was used as a development collaborator throughout the project. Key contributions:
+
+- **Incremental index update** — Claude suggested appending to the existing inverted index in `add_documents()` rather than rebuilding from scratch. This was a genuine efficiency improvement and was kept as-is.
+- **Provider abstraction design** — Claude proposed the `BaseLLMClient` abstract base class with shared prompt builders, making each new provider a self-contained change with no impact on `docubot.py` or the API layer.
+- **Agentic pipeline** — Claude helped design the two-step reasoning chain (plan → retrieve → answer) where the LLM first decides what to search for before executing retrieval.
+- **One suggestion I did not use** — Claude suggested adding a `conftest.py` for pytest configuration. The evaluation script runs as a plain Python module, so this was unnecessary and was ignored.
+
+**What biases or limitations did you observe in AI-assisted development?**
+
+- Claude defaulted to adding explanatory comments to every function. These were removed in a cleanup pass since the code is self-documenting.
+- Claude occasionally over-engineered solutions — for example, proposing Gradio for the frontend before I clarified the portfolio requirement. Explicit constraints were needed to redirect it.
+- When given free rein, Claude gravitated toward more complex patterns until prompted to consider simpler alternatives.
+
+**What did you verify independently?**
+
+All provider SDK calls, the placeholder API key detection logic (`startswith("your_")`), and the DEV_MODE hot-reload behavior were tested manually against real API keys before being accepted.

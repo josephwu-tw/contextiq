@@ -2,7 +2,7 @@
 
 > Context-aware documentation retrieval and AI-powered Q&A for developer knowledge bases.
 
-ContextIQ is a full-stack AI application that answers developer questions about a codebase by retrieving relevant documentation snippets and synthesizing grounded answers through a large language model. It supports three AI providers (Gemini, Claude, ChatGPT) and three query modes, with a FastAPI backend and a vanilla JS frontend.
+ContextIQ is a full-stack AI application that answers developer questions about a codebase by retrieving relevant documentation snippets and synthesizing grounded answers through a large language model. It supports three AI providers (Gemini, Claude, ChatGPT) and four query modes, with a FastAPI backend and a vanilla JS frontend.
 
 ---
 
@@ -14,7 +14,8 @@ ContextIQ is an extension of **DocuBot**, a CodePath AI110 tinker activity. The 
 
 ## Features
 
-- **Three query modes** — RAG (retrieval + AI synthesis), Naive LLM (AI only), Retrieval Only (raw snippets, no AI)
+- **Four query modes** — RAG, Agentic (multi-step reasoning chain), Naive LLM (AI only), Retrieval Only (raw snippets, no AI)
+- **Agentic mode** — LLM plans what to search for, executes retrieval with those terms, then synthesizes — intermediate steps visible in the chat UI
 - **Multi-provider** — Gemini, Claude (Anthropic), ChatGPT (OpenAI); missing keys are gracefully skipped
 - **Custom document upload** — extend the knowledge base at runtime with `.md` or `.txt` files
 - **Provider badge** — each chat response is labeled with the provider that answered it
@@ -44,7 +45,7 @@ FastAPI  ─── /api/chat ──────► DocuBot.retrieve()
 
 The retrieval pipeline splits documents into paragraph-level chunks, builds an inverted word index, scores candidates by query-word overlap, and returns the top-k results. In RAG mode, those chunks are passed as grounded context to the selected LLM with a strict prompt that forbids hallucination.
 
-See [`assets/`](assets/) for the system architecture diagram.
+![System Architecture](assets/architecture.svg)
 
 ---
 
@@ -174,6 +175,21 @@ Q: Is there any mention of payment processing in these docs?
 A: I do not know based on the docs I have.
 ```
 
+**Agentic mode — observable reasoning chain**
+```
+Q: Where is the auth token generated?
+
+① Plan
+   The question asks about token creation in the auth flow.
+   Searching: "token generate auth utils"
+
+② Retrieved
+   AUTH.md · 3 chunks
+
+A: Based on AUTH.md, tokens are created by the generate_access_token
+   function inside auth_utils.py and signed using AUTH_SECRET_KEY.
+```
+
 **Custom doc upload — extended knowledge**
 ```
 Q: How do I run the app with Docker?
@@ -196,6 +212,8 @@ A: Run the application using: docker run -p 8080:8080 contextiq-app
 **FastAPI over all-in-one frameworks** — Replacing Gradio with a decoupled FastAPI backend and vanilla JS frontend improves scalability: the API can be consumed by any client (browser, CLI, tests, external tools) and the auto-generated Swagger UI documents the contract for free.
 
 **Provider abstraction** — All three LLM providers share a base class with shared prompt builders. Swapping a provider requires changing one line, and new providers can be added without touching `docubot.py` or the API layer.
+
+**Agentic mode separates planning from retrieval** — Rather than passing the raw user query directly to the index, the LLM first decides what terms are most likely to appear in the relevant documentation. This decouples query intent from keyword matching and produces observable intermediate steps (reasoning + search terms + retrieved sources) that make the decision chain auditable.
 
 ---
 
