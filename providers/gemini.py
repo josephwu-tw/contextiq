@@ -6,7 +6,9 @@ GEMINI_MODEL = "gemini-2.5-flash"
 
 
 class GeminiClient(BaseLLMClient):
-    provider_name = "Gemini"
+    @property
+    def provider_name(self) -> str:
+        return "Gemini"
 
     def __init__(self):
         api_key = os.getenv("GEMINI_API_KEY")

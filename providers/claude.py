@@ -6,7 +6,9 @@ CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 
 
 class ClaudeClient(BaseLLMClient):
-    provider_name = "Claude"
+    @property
+    def provider_name(self) -> str:
+        return "Claude"
 
     def __init__(self):
         api_key = os.getenv("ANTHROPIC_API_KEY")

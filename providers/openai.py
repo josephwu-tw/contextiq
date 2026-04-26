@@ -6,7 +6,9 @@ OPENAI_MODEL = "gpt-4o-mini"
 
 
 class OpenAIClient(BaseLLMClient):
-    provider_name = "ChatGPT"
+    @property
+    def provider_name(self) -> str:
+        return "ChatGPT"
 
     def __init__(self):
         api_key = os.getenv("OPENAI_API_KEY")
@@ -21,7 +23,7 @@ class OpenAIClient(BaseLLMClient):
             model=OPENAI_MODEL,
             messages=[{"role": "user", "content": prompt}],
         )
-        return response.choices[0].message.content.strip()
+        return (response.choices[0].message.content or "").strip()
 
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str:
         response = self.client.chat.completions.create(
@@ -31,7 +33,7 @@ class OpenAIClient(BaseLLMClient):
                 {"role": "user", "content": f"Answer this developer question: {query}"},
             ],
         )
-        return response.choices[0].message.content.strip()
+        return (response.choices[0].message.content or "").strip()
 
     def answer_from_snippets(self, query: str, snippets: list) -> str:
         if not snippets:
@@ -43,4 +45,4 @@ class OpenAIClient(BaseLLMClient):
                 {"role": "user", "content": self._build_rag_prompt(query, snippets)},
             ],
         )
-        return response.choices[0].message.content.strip()
+        return (response.choices[0].message.content or "").strip()
