@@ -1,14 +1,10 @@
 # ContextIQ
 
-> Context-aware documentation retrieval and AI-powered Q&A for developer knowledge bases.
+> Multi-provider RAG system with an agentic reasoning mode, pluggable LLM backends, and a quantified retrieval evaluation harness.
 
-ContextIQ is a full-stack AI application that answers developer questions about a codebase by retrieving relevant documentation snippets and synthesizing grounded answers through a large language model. It supports three AI providers (Gemini, Claude, ChatGPT) and four query modes, with a FastAPI backend and a vanilla JS frontend.
+Developers working in large codebases spend significant time chasing documentation. ContextIQ solves this with a retrieval-augmented Q&A pipeline: users ask questions about a codebase, the system retrieves the most relevant documentation chunks, and a pluggable LLM synthesizes a grounded, source-cited answer — refusing to guess when evidence is insufficient.
 
----
-
-## Origin
-
-ContextIQ is an extension of **DocuBot**, a CodePath AI110 tinker activity. The original DocuBot was a CLI-only tool that demonstrated three approaches to documentation Q&A — naive LLM generation, keyword-based retrieval, and retrieval-augmented generation — using a single Gemini provider. ContextIQ builds on that foundation by adding multi-provider support, a production-grade REST API, a web frontend, custom document upload, and a formal evaluation harness.
+The system supports three AI providers (Gemini, Claude, OpenAI), four query modes including an observable agentic reasoning chain, runtime document upload with incremental index updates, and a formal evaluation harness that measures retrieval hit rate before and after corpus changes.
 
 ---
 
@@ -25,27 +21,79 @@ ContextIQ is an extension of **DocuBot**, a CodePath AI110 tinker activity. The 
 
 ---
 
-## Architecture
+## System Architecture
 
 ```
-User (browser)
-     │  HTTP (fetch)
-     ▼
-FastAPI  ─── /api/chat ──────► DocuBot.retrieve()
-(api/main.py)                       │
-     │                              ▼
-     │                     Inverted index
-     │                     score + top-k chunks
-     │                              │
-     └── /api/chat (LLM modes) ─► providers/
-                                  ├── gemini.py   (google-genai)
-                                  ├── claude.py   (anthropic)
-                                  └── openai.py   (openai)
+┌─────────────────────────────────────────────────────────────┐
+│  Client Layer                                               │
+│  Browser (Vanilla JS)  ·  CLI (cli.py)  ·  Eval harness    │
+└────────────────────────┬────────────────────────────────────┘
+                         │ HTTP fetch / direct import
+┌────────────────────────▼────────────────────────────────────┐
+│  API Layer  —  api/main.py  (FastAPI)                       │
+│  POST /api/chat  ·  POST /api/docs/upload                   │
+│  GET  /api/providers  ·  GET /api/health                    │
+│  Pydantic request/response models, static file serving      │
+└──────────────┬──────────────────────────┬───────────────────┘
+               │                          │
+┌──────────────▼───────────┐  ┌───────────▼──────────────────┐
+│  Retrieval Engine        │  │  Provider Abstraction Layer   │
+│  docubot.py              │  │  providers/                   │
+│                          │  │                               │
+│  • load + chunk docs     │  │  BaseLLMClient (ABC)          │
+│    (paragraph-level)     │  │  ├── GeminiClient             │
+│  • build inverted index  │  │  ├── ClaudeClient             │
+│  • overlap scoring       │  │  └── OpenAIClient             │
+│  • top-k retrieval       │  │                               │
+│  • incremental updates   │  │  shared: plan_retrieval()     │
+│    (no full rebuild)     │  │          _build_rag_prompt()  │
+└──────────────────────────┘  └──────────────────────────────┘
 ```
 
-The retrieval pipeline splits documents into paragraph-level chunks, builds an inverted word index, scores candidates by query-word overlap, and returns the top-k results. In RAG mode, those chunks are passed as grounded context to the selected LLM with a strict prompt that forbids hallucination.
+**Request flow (RAG mode):**
+
+```
+POST /api/chat {message, provider, mode="RAG"}
+  → DocuBot.retrieve(query)          ← inverted index + overlap score
+  → top-k (filename, chunk) pairs
+  → BaseLLMClient._build_rag_prompt  ← inject chunks + refusal instruction
+  → provider SDK call  (Gemini / Claude / OpenAI)
+  → ChatResponse {answer, steps}     ← source-cited, grounded answer
+```
+
+**Agentic mode adds a planning step:**
+
+```
+POST /api/chat {mode="Agentic"}
+  → client.plan_retrieval(query)     ← LLM generates targeted search terms
+  → DocuBot.retrieve(search_terms)
+  → client.answer_from_snippets()
+  → ChatResponse {answer, steps: [plan, retrieved_sources]}
+```
 
 ![System Architecture](assets/architecture.svg)
+
+---
+
+## Scalability & Limitations
+
+**What scales well**
+
+- The provider abstraction (`BaseLLMClient` ABC) makes adding a new LLM backend a ~30-line change with no modifications to `docubot.py` or the API layer.
+- `add_documents()` patches the existing inverted index at the new chunk offset rather than rebuilding from scratch — hot document ingestion does not degrade with corpus size.
+- The API, CLI, and evaluation harness all consume the same `DocuBot` interface, so retrieval improvements are immediately reflected across all surfaces.
+
+**Known constraints and upgrade paths**
+
+| Area | Current limitation | Production upgrade |
+|------|-------------------|-------------------|
+| Retrieval quality | Keyword overlap; synonym blindness | Sentence-transformer embeddings + FAISS |
+| Concurrency | Sync LLM calls block uvicorn worker threads | `async def` endpoints + async SDK clients |
+| Response latency | Full answer buffered before return | Server-Sent Events streaming |
+| State durability | In-memory index; lost on restart | Persist to SQLite/disk or a vector store |
+| Reliability | No retry or provider fallback | Exponential backoff + failover to next provider |
+
+The evaluation harness provides a regression baseline so that any retrieval strategy change (e.g., swapping to embeddings) can be measured against the documented 75% hit rate on the default corpus.
 
 ---
 
@@ -76,7 +124,20 @@ contextiq/
 
 ---
 
-## Setup
+## Running with Docker
+
+```bash
+cp .env.example .env
+# fill in at least one API key in .env
+
+docker compose up --build
+```
+
+Open **http://localhost:8000**. API keys are injected from `.env` at runtime — they are never baked into the image.
+
+---
+
+## Setup (local)
 
 **Requirements:** Python 3.9+
 
