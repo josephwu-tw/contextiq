@@ -30,7 +30,7 @@ class OpenAIClient(BaseLLMClient):
             model=OPENAI_MODEL,
             messages=[
                 {"role": "system", "content": "You are a documentation assistant."},
-                {"role": "user", "content": f"Answer this developer question: {query}"},
+                {"role": "user", "content": self._build_naive_prompt(query, all_text)},
             ],
         )
         return (response.choices[0].message.content or "").strip()

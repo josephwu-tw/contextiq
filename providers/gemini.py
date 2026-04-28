@@ -25,7 +25,7 @@ class GeminiClient(BaseLLMClient):
     def naive_answer_over_full_docs(self, query: str, all_text: str) -> str:
         response = self.client.models.generate_content(
             model=GEMINI_MODEL,
-            contents=self._build_naive_prompt(query),
+            contents=self._build_naive_prompt(query, all_text),
         )
         return (response.text or "").strip()
 

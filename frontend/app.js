@@ -268,6 +268,7 @@ async function uploadFiles() {
 
   try {
     const res = await fetch("/api/docs/upload", { method: "POST", body: formData });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     setDocStatus(data.message);
   } catch (err) {
@@ -281,6 +282,7 @@ async function resetDocs() {
   setDocStatus("Resetting…");
   try {
     const res = await fetch("/api/docs/reset", { method: "POST" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     setDocStatus(data.message);
   } catch (err) {

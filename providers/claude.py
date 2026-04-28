@@ -30,7 +30,7 @@ class ClaudeClient(BaseLLMClient):
         response = self.client.messages.create(
             model=CLAUDE_MODEL,
             max_tokens=1024,
-            messages=[{"role": "user", "content": self._build_naive_prompt(query)}],
+            messages=[{"role": "user", "content": self._build_naive_prompt(query, all_text)}],
         )
         return response.content[0].text.strip()
 

@@ -35,8 +35,9 @@ class BaseLLMClient(ABC):
             "search_terms": terms_m.group(1).strip() if terms_m else query,
         }
 
-    def _build_naive_prompt(self, query: str) -> str:
-        return f"You are a documentation assistant.\nAnswer this developer question: {query}"
+    def _build_naive_prompt(self, query: str, all_text: str = "") -> str:
+        docs_section = f"\n\nDocumentation:\n{all_text}" if all_text else ""
+        return f"You are a documentation assistant.{docs_section}\n\nAnswer this developer question: {query}"
 
     def _build_rag_prompt(self, query: str, snippets: list) -> str:
         context = "\n\n".join(f"File: {fname}\n{text}" for fname, text in snippets)
