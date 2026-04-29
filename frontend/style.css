@@ -396,22 +396,6 @@ body {
 .btn-send:hover    { background: var(--accent-hover); }
 .btn-send:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.btn-clear {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: var(--radius);
-  padding: 12px 22px;
-  font-size: 0.875rem;
-  font-weight: 600;
-  font-family: var(--font);
-  cursor: pointer;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background 0.15s, opacity 0.15s;
-}
-.btn-clear:hover { background: var(--accent-hover); }
-
 /* ── Scrollbar ───────────────────────────────────────────── */
 ::-webkit-scrollbar              { width: 5px; }
 ::-webkit-scrollbar-track        { background: transparent; }
