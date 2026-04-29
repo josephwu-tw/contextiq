@@ -40,13 +40,15 @@ class DocuBot:
         return index
 
     def score_document(self, query, text):
-        query_words = query.lower().split()
-        text_lower = text.lower()
-        return sum(1 for word in query_words if word in text_lower)
+        _punct = ".,!?;:\"'()"
+        query_words = {w.strip(_punct) for w in query.lower().split() if w.strip(_punct)}
+        text_words  = {w.strip(_punct) for w in text.lower().split()  if w.strip(_punct)}
+        return sum(1 for word in query_words if word in text_words)
 
     def retrieve(self, query, top_k=3, min_score=1):
         # min_score=1 filters chunks that only matched on stop words
-        query_words = set(query.lower().split())
+        _punct = ".,!?;:\"'()"
+        query_words = {w.strip(_punct) for w in query.lower().split() if w.strip(_punct)}
         candidate_indices = set()
         for word in query_words:
             for idx in self.index.get(word, set()):

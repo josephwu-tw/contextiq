@@ -91,6 +91,7 @@ function setupListeners() {
   document.getElementById("file-input").addEventListener("change", uploadFiles);
 
   document.getElementById("reset-btn").addEventListener("click", resetDocs);
+  document.getElementById("clear-btn").addEventListener("click", clearChat);
 }
 
 function autoResize() {
@@ -292,6 +293,16 @@ async function resetDocs() {
 
 function setDocStatus(msg) {
   document.getElementById("doc-status").textContent = msg;
+}
+
+function clearChat() {
+  const messages = document.getElementById("messages");
+  messages.innerHTML = `
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">⚡</div>
+      <h2>Ask anything about the docs</h2>
+      <p>Try: <em>Where is the auth token created?</em></p>
+    </div>`;
 }
 
 // ── Start ────────────────────────────────────────────────────
