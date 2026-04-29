@@ -8,6 +8,12 @@ The system supports three AI providers (Gemini, Claude, OpenAI), four query mode
 
 ---
 
+## Demo
+
+[![Watch the demo](https://cdn.loom.com/sessions/thumbnails/9771aa20eaf74c0a8bb4123087a9a80a-with-play.gif)](https://www.loom.com/share/9771aa20eaf74c0a8bb4123087a9a80a)
+
+---
+
 ## Features
 
 - **Four query modes** — RAG, Agentic (multi-step reasoning chain), Naive LLM (AI only), Retrieval Only (raw snippets, no AI)
